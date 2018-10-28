@@ -1,8 +1,9 @@
 #!/bin/bash
 # Prints out file creator
+echo "======================================================"
 echo "Name: Nicholas Kennedy"
 echo "StudentID: 3674937"
-echo ""
+echo "======================================================"
 
 if [ "$1" == '1' ]
 then
@@ -25,7 +26,6 @@ then
 	# If the user does not enter in command, print out menu.
 elif [ $# -eq 0 ]
 then
-	echo "======================================================"
 	echo "No Argument passed in please try from the list below:"
 	echo "1: Print the amount of free/occupied memory on the system"
 	echo "2: Print the amount of free/occupied on the system"
@@ -36,7 +36,6 @@ then
 	exit
 else
 	# If the command is not know, print out unknown and menu.
-	echo "======================================================"
 	echo "Unknown command. Try the commands below:"
 	echo "1: Print the amount of free/occupied memory on the system"
 	echo "2: Print the amount of free/occupied on the system"
@@ -46,30 +45,24 @@ else
 	echo ""	
 	exit
 fi
-echo "======================================================"
 
 # Print CPU Cored
 echo ""
-echo "CPU Cores"
-lscpu | grep "^CPU(s)"
+lscpu | grep "^CPU(s)" | awk '{print "The number of CPU cores on the system: "$2}'
 
 # Print current process prioirty
-echo ""
-echo "Current process priority (Nice Number)"
+echo "The current process priority (Nice Number)"
 ps -e -o uid,pid,comm,nice
+echo ""
 
 # Print the number of running process
-echo ""
-echo "print the total number of processes running"
-ps -eo user=|sort|uniq -c |awk '{ print $2 " " $1}' | grep $USER
+ps -eo user=|sort|uniq -c |awk '{ print "The total number of processings running under " $2 ": " $1}' | grep $USER
 
 # number of open files descriptors owned by current user
-echo ""
-echo "the number of open files descriptors owned by the current user"
-lsof | grep $USER | wc -l
+lsof | grep $USER | wc -l | awk '{print "The number of open files descriptors owned by the currenr user: "$1}'
 
-echo "Max files open"
-cat /proc/sys/fs/file-max
+# The maximum default number of files descriptors that can be opened by a process
+cat /proc/sys/fs/file-max |awk '{print "The maximum default number of files descriptors that can be opened by a process: "$1}'
 echo "======================================================"
 echo ""
 #while getopts 'CPU' option; do
