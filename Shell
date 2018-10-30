@@ -17,7 +17,7 @@ elif [ "$2" == '2' ]
 then
 	# Print Meminfo and use awk to convert kB to MB. 
 	# Grep filters out all unneeded rows and shows MemFree and MemTotal.
-	awk '$3=="kB"{$2=$2/1024;$3="MB"} 1' /proc/meminfo |grep -E "MemFree|MemTotal"
+	awk '$3=="kB"{$2=$2/1024;$3="MB"} 1' /proc/meminfo |grep -E "MemAvailable|MemFree"
 elif [ "$2" == '3' ]
 then
 	# Print network details.
@@ -62,7 +62,7 @@ while getopts ":s:" o; do
 		lscpu | grep "^CPU(s)" | awk '{print "The number of CPU cores on the system: "$2}'
 
 		# Print current process prioirty
-		ps -e -o uid,pid,comm,ni | grep $BASHPID | awk '{ print "Nice Number is :" $4}'
+		ps -e -o uid,pid,comm,ni | grep $BASHPID | awk '{ print "The current process nice number is :" $4}'
 
 		# Print the number of running process
 		ps -eo user=|sort|uniq -c |awk '{ print "The total number of processings running under " $2 ": " $1}' | grep $USER
@@ -71,7 +71,7 @@ while getopts ":s:" o; do
 		lsof | grep $USER | wc -l | awk '{print "The number of open files descriptors owned by the currenr user: "$1}'
 
 		# The maximum default number of files descriptors that can be opened by a process
-		cat /proc/sys/fs/file-max |awk '{print "The maximum default number of files descriptors that can be opened by a process: "$1}'
+		ulimit -n |awk '{print "The maximum default number of files that can be opened by a process: "$1}'
             ;;
     esac
 done
