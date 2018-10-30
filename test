@@ -1,18 +1,81 @@
-#!/bin/sh
-a_flag=FALSE
-b_flag=FALSE
+#!/bin/bash
+# Name: Nicholas Kennedy
+# StudentID: 3674937
 
-while getopts e option
-do case $option in 
-a) a_flag=true;;
-b) b_flag=true;;
-l) logfiles=${OPTARG};;
-\?) echo -u2 "Usage ${prog_name} [ -a -b -l logfile_name ]"
-exit 2;;
-esac
+# Prints out file creator
+echo "======================================================"
+echo "Name: Nicholas Kennedy"
+echo "StudentID: 3674937"
+echo "======================================================"
+
+if [ "$2" == '1' ]
+then
+	# Meminfo will print out data while using grip and a while card will search for memory items.
+	# Grep filters out all unneeded rows and shows MemFree and MemTotal.
+	awk '$3=="kB"{$2=$2/1024;$3="MB"} 1' /proc/meminfo |grep -E "MemFree|MemTotal"	
+elif [ "$2" == '2' ]
+then
+	# Print Meminfo and use awk to convert kB to MB. 
+	# Grep filters out all unneeded rows and shows MemFree and MemTotal.
+	awk '$3=="kB"{$2=$2/1024;$3="MB"} 1' /proc/meminfo |grep -E "MemFree|MemTotal"
+elif [ "$2" == '3' ]
+then
+	# Print network details.
+	arp | awk '{ print "Current connected IP Address: " $1" and MAC Address: "$3 }'
+elif [ "$2" == '4' ]
+then
+	# Use uptime and filter by awk to show hours up.
+	uptime | awk '{print "The System has been up for "$3" hours"}'
+	# If the user does not enter in command, print out menu.
+elif [ $# -eq 0 ]
+then
+	echo "No Argument passed in please try from the list below:"
+	echo "1: Print the amount of free/occupied memory on the system"
+	echo "2: Print the amount of free/occupied on the system"
+	echo "3: Print connection infomation of all connected devices"
+	echo "4: Print the amount of time the system has been running"
+	echo "======================================================"
+	echo "(Try enter in ./Shell -s 3)"
+	echo ""
+	exit
+	
+else
+	# If the command is not know, print out unknown and menu.
+	echo "Unknown command. Try the commands below:"
+	echo "1: Print the amount of free/occupied memory on the system"
+	echo "2: Print the amount of free/occupied on the system"
+	echo "3: Print connection infomation of all connected devices"
+	echo "4: Print the amount of time the system has been running"
+	echo "======================================================"
+	echo "(Try enter in ./Shell -s 3)"
+	echo ""	
+	exit
+	
+fi
+
+# getopts allows the user to pass in an argument under s and have the program react a specific way.
+# while the user can enter in arguments, these are caputed in the wild card *.
+while getopts ":s:" o; do
+    case "${o}" in
+    	    *)
+	   	 # Print CPU Cored
+		lscpu | grep "^CPU(s)" | awk '{print "The number of CPU cores on the system: "$2}'
+
+		# Print current process prioirty
+		ps -e -o uid,pid,comm,ni | grep $BASHPID | awk '{ print "Nice Number is :" $4}'
+
+		# Print the number of running process
+		ps -eo user=|sort|uniq -c |awk '{ print "The total number of processings running under " $2 ": " $1}' | grep $USER
+
+		# number of open files descriptors owned by current user
+		lsof | grep $USER | wc -l | awk '{print "The number of open files descriptors owned by the currenr user: "$1}'
+
+		# The maximum default number of files descriptors that can be opened by a process
+		cat /proc/sys/fs/file-max |awk '{print "The maximum default number of files descriptors that can be opened by a process: "$1}'
+            ;;
+    esac
 done
 
-echo 123
-echo ${a_flag}
-echo ${b_flag}
-echo ${LOGFILE}
+echo "======================================================"
+echo ""
+
