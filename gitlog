@@ -1,32 +1,38 @@
+commit 16b29299d5447da9025c6753f840419bfc83ec35
+Author: Nickkennedy <s3674937@student.rmit.edu.au>
+Date:   Tue Oct 30 22:02:15 2018 +1100
+
+    Fixed up the Mac address formatting issue and clean up the memory scripts
+
 commit f78003556b6ce382415d8b594ac25c519bcbf994
-Author: s3674937 <s3674937@student.rmit.edu.au>
+Author: Nickkennedy <s3674937@student.rmit.edu.au>
 Date:   Tue Oct 30 21:36:05 2018 +1100
 
     impliment the getopts function and tidy up code
 
 commit 76a6eba83646175d9aa649ad4983768c2c56c5ee
-Author: s3674937 <s3674937@student.rmit.edu.au>
+Author: Nickkennedy <s3674937@student.rmit.edu.au>
 Date:   Sun Oct 28 20:58:08 2018 +1100
 
     clean up print commands and sort out bug on list count
 
 commit 89e50ee2de39a556926f0e584e9583a5a503b5ae
-Author: s3674937 <s3674937@student.rmit.edu.au>
+Author: Nickkennedy <s3674937@student.rmit.edu.au>
 Date:   Sun Oct 28 20:03:44 2018 +1100
 
     Clean up code and add in comments
 
 commit 02e4d077056ca772dd9522be510674190a2b2503
-Author: s3674937 <s3674937@student.rmit.edu.au>
+Author: Nickkennedy <s3674937@student.rmit.edu.au>
 Date:   Sun Oct 28 19:56:38 2018 +1100
 
     Added in if statements to accept arguments
 
 commit aa3264efee14997a6a1dd59ffcc00d9a11e161a7
-Author: s3674937 <s3674937@student.rmit.edu.au>
+Author: Nickkennedy <s3674937@student.rmit.edu.au>
 Date:   Sun Oct 28 17:33:49 2018 +1100
 
-    testing again
+    Basic code structure added
 
 commit e11654d087221dde18b13c99f8f01838e385fb3c
 Author: Nickkennedy <31816933+Nickkennedy@users.noreply.github.com>
