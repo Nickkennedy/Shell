@@ -6,7 +6,7 @@
 trap ctrl_c INT
 
 function ctrl_c(){
-	echo "Trapped it!"
+	echo "THERE IS NO ESCAPING NOW! MUHAHAHAHHA"
 }
 
 showmenu(){
@@ -37,8 +37,8 @@ debug(){
 	echo "Filetype: $filetype"
 	echo "Filedepth: $filedepth"
 	echo "Fileaction: $fileaction"
-	find -maxdepth 0 -path $directory -name $filename
-	find -name $filename 
+	find -maxdepth $filedepth -path "$directory" -name $filename -type "$filetype"
+	#find -maxdepth $filedepth, -path $directory, -name $filename, -type $filetype, -exec $fileaction
 	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 
 }
@@ -46,6 +46,7 @@ debug(){
 Searchforfile(){
 	echo "SEARCH"
 	read -p "Where should we begin the search? " directory
+	directory="*$directory*"
 	read -p "what file are you looking for? " filename
 	read -p "What is the file type? " filetype
 	read -p "What is the maximum depth we can search? " filedepth
@@ -64,8 +65,7 @@ testdirectory(){
 }
 
 testfindresult(){
-	find -path "$directory" -name $filename 
-	lines=$(find -name $filename | wc -c)
+	lines=$(find -name $filename | wc -l)
 
 	echo "There are :" $lines
 
