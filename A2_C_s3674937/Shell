@@ -1,0 +1,93 @@
+#!/bin/bash
+# Name: Nicholas Kennedy
+# StudentID: 3674937
+
+# Prints out file creator
+showmenu(){
+	clear
+	echo "======================================================"
+	echo "Name: Nicholas Kennedy"
+	echo "StudentID: 3674937"
+	echo "======================================================"
+}
+
+Errormenu(){
+	# If the command is not know, print out unknown and menu.
+	echo "Unknown command. Try the commands below:"
+	echo "1: Print the amount of free/occupied memory on the system"
+	echo "2: Print the amount of free/occupied on the system"
+	echo "3: Print connection infomation of all connected devices"
+	echo "4: Print the amount of time the system has been running"
+	echo "======================================================"
+	echo "(Try enter in ./Shell -s 3)"
+	echo ""	
+	exit
+}
+
+Searchforfile(){
+echo "SEARCH"
+read -p "what file are you looking for? " filename
+read -p "Where would you like to search? " directory
+
+if test -z "$directory"
+then
+	echo "No directory set. Defaulting to Home"
+	find /home -name $filename
+else
+	find "/"$directory -name $filename
+fi
+}
+
+
+showmenu
+
+case $2 in
+	1) 
+	# Meminfo will print out data while using grip and a while card will search for memory items.
+	# Grep filters out all unneeded rows and shows MemFree and MemTotal.
+	awk '$2=="kB"{$2=$2/1024;$3="MB"} 1' /proc/meminfo |grep -E "MemFree|MemTotal"	;;
+	
+	2) 
+	# Print Meminfo and use awk to convert kB to MB. 
+	# Grep filters out all unneeded rows and shows MemFree and MemTotal.
+	awk '$3=="kB"{$2=$2/1024;$3="MB"} 1' /proc/meminfo |grep -E "MemAvailable|MemFree";;
+	3)
+	# Print network details.
+	arp | awk '{ print "Current connected IP Address: " $1" and MAC Address: "$3 }';;
+	4)
+	# Use uptime and filter by awk to show hours up.
+	uptime | awk '{print "The System has been up for "$3" hours"}';;
+
+	*) 	
+	# If the user does not enter in command, print out menu.
+	Errormenu;;
+esac
+
+
+# getopts allows the user to pass in an argument under s and have the program react a specific way.
+# while the user can enter in arguments, these are caputed in the wild card *.
+while getopts ":s:" o; do
+    case "${o}" in
+    	    *)
+	   	 # Print CPU Cored
+		lscpu | grep "^CPU(s)" | awk '{print "The number of CPU cores on the system: "$2}'
+
+		# Print current process prioirty
+		ps -e -o uid,pid,comm,ni | grep $BASHPID | awk '{ print "The current process nice number is: " $4}'
+
+		# Print the number of running process
+		ps -eo user=|sort|uniq -c |awk '{ print "The total number of processings running under " $2 ": " $1}' | grep "$USER"
+
+		# number of open files descriptors owned by current user
+		lsof | grep "$USER" | wc -l | awk '{print "The number of open files descriptors owned by the currenr user: "$1}'
+
+		# The maximum default number of files descriptors that can be opened by a process
+		ulimit -n |awk '{print "The maximum default number of files that can be opened by a process: "$1}'
+            ;;
+    esac
+done
+
+echo "======================================================"
+
+Searchforfile
+
