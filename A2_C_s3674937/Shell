@@ -3,6 +3,12 @@
 # StudentID: 3674937
 
 # Prints out file creator
+trap ctrl_c INT
+
+function ctrl_c(){
+	echo "Trapped it!"
+}
+
 showmenu(){
 	clear
 	echo "======================================================"
@@ -24,18 +30,52 @@ Errormenu(){
 	exit
 }
 
-Searchforfile(){
-echo "SEARCH"
-read -p "what file are you looking for? " filename
-read -p "Where would you like to search? " directory
+debug(){
+	echo "~~~~~~~~~~~~~~~~~~~~~~~Debug~~~~~~~~~~~~~~~~~~~~~~~~~~"
+	echo "Directory: $directory"
+	echo "Filename: $filename"
+	echo "Filetype: $filetype"
+	echo "Filedepth: $filedepth"
+	echo "Fileaction: $fileaction"
+	find -maxdepth 0 -path $directory -name $filename
+	find -name $filename 
+	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 
-if test -z "$directory"
-then
-	echo "No directory set. Defaulting to Home"
-	find /home -name $filename
-else
-	find "/"$directory -name $filename
-fi
+}
+
+Searchforfile(){
+	echo "SEARCH"
+	read -p "Where should we begin the search? " directory
+	read -p "what file are you looking for? " filename
+	read -p "What is the file type? " filetype
+	read -p "What is the maximum depth we can search? " filedepth
+	read -p "What actions should we take? " fileaction
+	testdirectory
+	testfindresult
+}
+
+testdirectory(){
+	if test -z "$directory"
+	then
+		echo "No directory set. Defaulting to Home"
+		directory=$PWD
+		echo $directory
+	fi
+}
+
+testfindresult(){
+	find -path "$directory" -name $filename 
+	lines=$(find -name $filename | wc -c)
+
+	echo "There are :" $lines
+
+	if test $lines -eq "0"
+		then
+			echo "Couldnt find anything sorry"
+		Searchforfile
+	else
+		echo "Found it!"
+	fi
 }
 
 
@@ -90,4 +130,4 @@ done
 echo "======================================================"
 
 Searchforfile
-
+debug
