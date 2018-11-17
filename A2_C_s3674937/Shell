@@ -7,15 +7,49 @@
 trap ctrl_c INT
 
 function ctrl_c(){
+	echo ""
 	echo "THERE IS NO ESCAPING NOW! MUHAHAHAHHA"
 }
 
 header(){
-	echo "====================================================="
+	echo "======================================================"
 	echo "Name: Nicholas Kennedy"
 	echo "StudentID: 3674937"
 	echo "======================================================"
+}
 
+pausefooter(){
+	echo "======================================================"
+	read -p "Press any key to continue: " $return	
+}
+
+profilermenu(){
+	clear
+	header
+	echo "Welcome to the profiler"
+	read -p "What program would you like to monitor? " profiler
+	profilercheck
+}
+
+profilercheck(){
+	# Add in wildcards to profiler var
+	wildcard="*"
+	temp=$profiler$wildcard
+	profiler=$temp
+       	echo "$profiler"
+	# Counts the number of unique name processes running
+	profilerlines=$( top -n 2 |grep $profiler | uniq -f 1 | wc -l)
+	echo "There are $profilerlines currenlty running"
+	
+	# If there are multiple processes, echo out the different processes
+	if (( $profilerlines > 1))
+	then
+		echo "There are more then 1 profile running. See list below"
+		top -n 2 | grep $profiler | awk '{ print $13 }'
+		echo "Try again!"
+		pausefooter
+		profilermenu
+	fi
 }
 
 showmenu(){
@@ -24,7 +58,7 @@ showmenu(){
 	header
 	echo "1: System specifications (Assignment 2 part b)"
 	echo "2: File Search"
-	echo "3: basic profiler"
+	echo "3: Basic profiler"
 	echo "9: Exit"
 	echo "======================================================"
 	read -p "" WelcomeOptions
@@ -42,7 +76,6 @@ opt1menu(){
 	echo "======================================================"
 	read -p "" Opt1Options
 
-	
 	case $Opt1Options in
 		1) 
 		# Meminfo will print out data while using grip and a while card will search for memory items.
@@ -52,7 +85,7 @@ opt1menu(){
 	
 		2) 
 		# Print Meminfo and use awk to convert kB to MB. 
-		# Grep filters out all unneeded rows and shows MemFree and MemTotal.
+			# Grep filters out all unneeded rows and shows MemFree and MemTotal.
 		awk '$3=="kB"{$2=$2/1024;$3="MB"} 1' /proc/meminfo |grep -E "MemAvailable|MemFree"
 		opt1Secondmenu;;
 		3)
@@ -75,7 +108,7 @@ opt1menu(){
 
 }
 
-debug(){
+searchdebug(){
 	echo "~~~~~~~~~~~~~~~~~~~~~~~Debug~~~~~~~~~~~~~~~~~~~~~~~~~~"
 	echo "Directory: $directory"
 	echo "Filename: $filename"
@@ -83,27 +116,70 @@ debug(){
 	echo "Filedepth: $filedepth"
 	echo "Fileaction: $fileaction"
 	find $directory -maxdepth $filedepth -name $filename -type $filetype
-	#find -maxdepth $filedepth, -path $directory, -name $filename, -type $filetype, -exec $fileaction
 	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-
 }
 
 Searchforfile(){
-	#Get user input
+	#Get user input and validate input
 	clear
 	header
 	echo "Before we start the search, we just need to know some infomation."
 	read -p "Where should we begin the search? " directory
 	testdirectory
 	read -p "what name are you looking for? " filename
-	read -p "What is the file type? (f for file and d for director)" filetype
+	filetypeopt
+	read -p "What is the file type? " filetype
 	testfiletype
 	read -p "What is the maximum depth we can search? " filedepth
 	testfiledepth
-	read -p "What actions should we take? " fileaction	
 	findresults
-	echo "======================================================"
-	read -p "Press any key to continue: " $return
+
+	if (( lines == 1 ))
+	then
+		actionmenu
+		read -p "What actions should we take? " fileaction
+		testfileaction
+	fi
+
+	pausefooter
+}
+
+filetypeopt(){
+	echo ""
+	echo "Your file options are:"
+	echo "f) File";
+	echo "d) Directory";
+	echo "b) Block (buffered) special";
+	echo "c) Character (unbuffered) special";
+	echo "p) Named pipe (FIFO)"
+	echo "l) Symbolic link"
+	echo "s) Socket"
+	echo "D) Door (Solaris)"
+}
+
+actionmenu(){
+	echo "Your action options are:"
+	echo "d) Delete the file";
+	echo "p) Print the file directory";
+	echo "P) Print on one line";
+	echo "c) Custom query";
+	echo "n) no action"
+	echo "9) exit"
+}
+
+testfileaction(){
+	case $fileaction in 
+		d) find $directory -maxdepth $filedepth -name $filename -type $filetype -exec rm {} \;
+			echo "Your file has been deleted";;
+		p) find $directory -maxdepth $filedepth -name $filename -type $filetype -print;;
+		P) find $directory -maxdepth $filedepth -name $filename -type $filetype -print0;;
+		c) 
+			read -p "What is the custom command you would like to use?" custom
+			find $directory -maxdepth $filedepth -name $filename -type $filetype -exec $custom;;
+		n) find $directory -maxdepth $filedepth -name $filename -type $filetype;;
+		9) ;;
+		*) echo "You didnt enter a valid command";;
+	esac	
 }
 
 findresults(){
@@ -117,8 +193,6 @@ findresults(){
 	elif (($lines < 1))
 	then
 		echo "No results sorry!"
-	else
-		debug
 	fi
 }
 
@@ -131,14 +205,23 @@ testfiledepth(){
 	fi
 }
 
+# https://explainshell.com/explain?cmd=find%20.%20-type%20f%20-print0
+
 testfiletype(){
 	# Checks the file type is valid.
 	case $filetype in 
-		f) ;;
-		d) ;;
+		f) ;; #File
+		d) ;; #Directory
+		b) ;; #Block (buffered) special
+		c) ;; #Character (unbuffered) special
+		p) ;; #Named pipe (FIFO)
+		l) ;; #Symbolic link
+		s) ;; #Socket
+		D) ;; #Door (Solaris)
 		*)
-		echo "Invalid file type. Setting to file type to f"
-		filetype=f;;
+			#sets default if not valid.
+			echo "Invalid file type. Setting to file type to f"
+			filetype=f;;
 	esac
 }
 
@@ -160,8 +243,9 @@ testdirectory(){
 }
 
 testfindresult(){
+	#counts the bymber of results
 	lines=$(find $directory -maxdepth $filedepth -name $filename -type $filetype| wc -l)
-
+	echo ""
 	echo "We found $lines matchs"
 }
 
@@ -169,25 +253,17 @@ testfindresult(){
 opt1Secondmenu(){
 	clear
 	header
-	# getopts allows the user to pass in an argument under s and have the program react a specific way.
-	# while the user can enter in arguments, these are caputed in the wild card *.
-
-   	 # Print CPU Cored
+	# Print CPU Cored
 	lscpu | grep "^CPU(s)" | awk '{print "The number of CPU cores on the system: "$2}'
-
 	# Print current process prioirty
 	ps -e -o uid,pid,comm,ni | grep $BASHPID | awk '{ print "The current process nice number is: " $4}'
-
 	# Print the number of running process
 	ps -eo user=|sort|uniq -c |awk '{ print "The total number of processings running under " $2 ": " $1}' | grep "$USER"
-
 	# number of open files descriptors owned by current user
 	lsof | grep "$USER" | wc -l | awk '{print "The number of open files descriptors owned by the currenr user: "$1}'
-
 	# The maximum default number of files descriptors that can be opened by a process
 	ulimit -n |awk '{print "The maximum default number of files that can be opened by a process: "$1}'
-	echo "======================================================"
-	read -p "Press any key to continue: " $return
+	pausefooter
 	opt1menu
 }
 
@@ -196,12 +272,10 @@ do
 showmenu
 
 case $WelcomeOptions in 
-	1) echo "one"
-		opt1menu;;
-	2) echo "Two" 
-		Searchforfile;;
-	3) echo "Three";;
-	9) echo "Thanks for stopping by"
+	1) opt1menu;;
+	2) Searchforfile;;
+	3) profilermenu;;
+	9) echo "Exiting program"
 		exit;;
 esac
 
