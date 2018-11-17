@@ -23,12 +23,48 @@ pausefooter(){
 	read -p "Press any key to continue: " $return	
 }
 
+filetypeopt(){
+	echo ""
+	echo "Your file options are:"
+	echo "f) File";
+	echo "d) Directory";
+	echo "b) Block (buffered) special";
+	echo "c) Character (unbuffered) special";
+	echo "p) Named pipe (FIFO)"
+	echo "l) Symbolic link"
+	echo "s) Socket"
+	echo "D) Door (Solaris)"
+}
+
+actionmenu(){
+	echo "Your action options are:"
+	echo "d) Delete the file";
+	echo "p) Print the file directory";
+	echo "P) Print on one line";
+	echo "c) Custom query";
+	echo "n) no action"
+	echo "9) exit"
+}
+
 profilermenu(){
 	clear
 	header
 	echo "Welcome to the profiler"
 	read -p "What program would you like to monitor? " profiler
 	profilercheck
+}
+
+profileoptions(){
+	read -p "Would you like to monitor the memory utilization? " profileoptmem
+	read -p "Would you like to monitor the CPU utilization? " profileoptcpu
+	profileoptionsmenu
+}
+
+profileoptionsmenu(){
+	echo ""
+	top | grep $profiler | awk '{print "CPU: " $2}'
+	
+	pausefooter
 }
 
 profilercheck(){
@@ -38,17 +74,26 @@ profilercheck(){
 	profiler=$temp
        	echo "$profiler"
 	# Counts the number of unique name processes running
-	profilerlines=$( top -n 2 |grep $profiler | uniq -f 1 | wc -l)
+	profilerlines=$( top -n 1 |grep $temp | uniq -f 1 | wc -l)
 	echo "There are $profilerlines currenlty running"
 	
 	# If there are multiple processes, echo out the different processes
 	if (( $profilerlines > 1))
 	then
 		echo "There are more then 1 profile running. See list below"
-		top -n 2 | grep $profiler | awk '{ print $13 }'
+		top -n 2 | grep $temp | awk '{ print $13 }'
 		echo "Try again!"
 		pausefooter
 		profilermenu
+	elif (( $profilerlines == 0))
+	then
+		echo "There is no profile called $profiler "
+		pausefooter
+
+
+	elif(( $profilerlines == 1 ))
+	then
+		profileoptions
 	fi
 }
 
@@ -108,17 +153,6 @@ opt1menu(){
 
 }
 
-searchdebug(){
-	echo "~~~~~~~~~~~~~~~~~~~~~~~Debug~~~~~~~~~~~~~~~~~~~~~~~~~~"
-	echo "Directory: $directory"
-	echo "Filename: $filename"
-	echo "Filetype: $filetype"
-	echo "Filedepth: $filedepth"
-	echo "Fileaction: $fileaction"
-	find $directory -maxdepth $filedepth -name $filename -type $filetype
-	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-}
-
 Searchforfile(){
 	#Get user input and validate input
 	clear
@@ -140,42 +174,18 @@ Searchforfile(){
 		read -p "What actions should we take? " fileaction
 		testfileaction
 	fi
-
 	pausefooter
-}
-
-filetypeopt(){
-	echo ""
-	echo "Your file options are:"
-	echo "f) File";
-	echo "d) Directory";
-	echo "b) Block (buffered) special";
-	echo "c) Character (unbuffered) special";
-	echo "p) Named pipe (FIFO)"
-	echo "l) Symbolic link"
-	echo "s) Socket"
-	echo "D) Door (Solaris)"
-}
-
-actionmenu(){
-	echo "Your action options are:"
-	echo "d) Delete the file";
-	echo "p) Print the file directory";
-	echo "P) Print on one line";
-	echo "c) Custom query";
-	echo "n) no action"
-	echo "9) exit"
 }
 
 testfileaction(){
 	case $fileaction in 
 		d) find $directory -maxdepth $filedepth -name $filename -type $filetype -exec rm {} \;
-			echo "Your file has been deleted";;
+		echo "Your file has been deleted";;
 		p) find $directory -maxdepth $filedepth -name $filename -type $filetype -print;;
 		P) find $directory -maxdepth $filedepth -name $filename -type $filetype -print0;;
 		c) 
-			read -p "What is the custom command you would like to use?" custom
-			find $directory -maxdepth $filedepth -name $filename -type $filetype -exec $custom;;
+		read -p "What is the custom command you would like to use?" custom
+		find $directory -maxdepth $filedepth -name $filename -type $filetype -exec $custom;;
 		n) find $directory -maxdepth $filedepth -name $filename -type $filetype;;
 		9) ;;
 		*) echo "You didnt enter a valid command";;
