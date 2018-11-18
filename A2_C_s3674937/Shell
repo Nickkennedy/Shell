@@ -7,11 +7,13 @@
 trap ctrl_c INT
 
 function ctrl_c(){
+	# Catchs any control C commands
 	echo ""
 	echo "THERE IS NO ESCAPING NOW! MUHAHAHAHHA"
 }
 
 header(){
+	# Prints header menu
 	echo "======================================================"
 	echo "Name: Nicholas Kennedy"
 	echo "StudentID: 3674937"
@@ -19,34 +21,36 @@ header(){
 }
 
 pausefooter(){
+	# Prints pause
 	echo "======================================================"
 	read -p "Press any key to continue: " $return	
 }
 
 filetypeopt(){
-	echo ""
+	# prints option menu
 	echo "Your file options are:"
-	echo "f) File";
-	echo "d) Directory";
-	echo "b) Block (buffered) special";
-	echo "c) Character (unbuffered) special";
-	echo "p) Named pipe (FIFO)"
-	echo "l) Symbolic link"
-	echo "s) Socket"
-	echo "D) Door (Solaris)"
+	echo "	f) File";
+	echo "	d) Directory";
+	echo "	b) Block (buffered) special";
+	echo "	c) Character (unbuffered) special";
+	echo "	p) Named pipe (FIFO)"
+	echo "	l) Symbolic link"
+	echo "	s) Socket"
+	echo "	D) Door (Solaris)"
 }
 
 actionmenu(){
 	echo "Your action options are:"
-	echo "d) Delete the file";
-	echo "p) Print the file directory";
-	echo "P) Print on one line";
-	echo "c) Custom query";
-	echo "n) no action"
-	echo "9) exit"
+	echo "	d) Delete the file";
+	echo "	p) Print the file directory";
+	echo "	P) Print on one line";
+	echo "	c) Custom query";
+	echo "	n) no action"
+	echo "	9) exit"
 }
 
 profilermenu(){
+	# Prints out profiler menu and takes input
 	clear
 	header
 	echo "Welcome to the profiler"
@@ -55,6 +59,7 @@ profilermenu(){
 }
 
 profilemenu(){
+	# Prints out profiler menu  when there is only 1 argument
 	clear
 	header
 	echo "1) Monitor memory utilization"
@@ -62,12 +67,25 @@ profilemenu(){
 	echo "3) Monitor both memory and CPU utilization"
 	echo "9) Exit back to main menu"
 	echo "======================================================"
-	read -p "" profilemenu
-	profiletoptions	
+	read -p "" profilemenuoptions
+	profiletoptions
+	printf "Press Enter to stop\n"
+	read -p "" enter
+	
+	# Waits for user to press enter in order to cancel background process
+	case $enter in
+		n|"") echo "Stopping backgroup script"
+			# Kills background process and calls pausefooter
+			kill %1
+			wait $! 2>/dev/null
+			pausefooter;
+	esac
+
 }
 
 profiletoptions(){
-	case $profilemenu in 
+	# Takes argument from profilemenu and runs it through a case to start background process
+	case $profilemenuoptions in 
 		1) 
 			top | awk '{if($13 ~ '$temp') print "Program name " $13 " is using "$11"% of memory"}' & ;;
 		2) 
@@ -77,32 +95,17 @@ profiletoptions(){
 		9) 
 			showmenu;;
 	esac
-
-	read -s- n 1 key
-
-	if (( $key -eq "" ))
-	then
-		echo "Your pressed enter"
-		kill %1
-		pausefooter
-
-	fi
-
 }
 
 profilercheck(){
 	# Add in wildcards to profiler var
 	wildcard="/"
-	wildcard2="*"
 	temp=$wildcard$profiler$wildcard
-	temp2=$wildcard2$profiler$wildcard2
-	echo "temp : $temp"
-       	echo "temp2: $temp2"
+	echo "Searching for programs called $profiler ...."
 	# Counts the number of unique name processes running
 	profilerlines=$(top -n 2 | awk '{if(a[$13]++ == 1) if($13 ~ '$temp') print $13}' | wc -l)
-	echo "There are $profilerlines currenlty running"
 	
-	# If there are multiple processes, echo out the different processes
+	# Depending on how many processes are found, filters results to correct path
 	if (( $profilerlines > 1))
 	then
 		echo "There are more then 1 profile running. See list below"
@@ -112,39 +115,39 @@ profilercheck(){
 		profilermenu
 	elif (( $profilerlines == 0))
 	then
-		echo "There is no profile called $profiler "
+		echo "There is no profile called $profiler"
 		pausefooter
-
-
 	elif(( $profilerlines == 1 ))
 	then
-		echo "We found 1"
+		echo "We found 1 process"
 		pausefooter
 		profilemenu
 	fi
 }
 
 showmenu(){
+	# Prints main menu with header
 	clear
 	unset WelcomeOptions
 	header
-	echo "1: System specifications (Assignment 2 part b)"
-	echo "2: File Search"
-	echo "3: Basic profiler"
-	echo "9: Exit"
+	echo "1) System specifications (Assignment 2 part b)"
+	echo "2) File Search"
+	echo "3) Basic profiler"
+	echo "9) Exit"
 	echo "======================================================"
 	read -p "" WelcomeOptions
 }
 
 opt1menu(){
+	# Prints put opton 1 as per assignment 2 B
 	clear
 	unset Opt1Options
 	header
-	echo "1: Print the amount of free/occupied memory on the system"
-	echo "2: Print the amount of free/occupied on the system"
-	echo "3: Print connection infomation of all connected devices"
-	echo "4: Print the amount of time the system has been running"
-	echo "9: Back"
+	echo "1) Print the amount of free/occupied memory on the system"
+	echo "2) Print the amount of free/occupied on the system"
+	echo "3) Print connection infomation of all connected devices"
+	echo "4) Print the amount of time the system has been running"
+	echo "9) Exit back to main menu"
 	echo "======================================================"
 	read -p "" Opt1Options
 
@@ -188,8 +191,9 @@ Searchforfile(){
 	read -p "Where should we begin the search? " directory
 	testdirectory
 	read -p "what name are you looking for? " filename
+	echo "What is the file type?"
 	filetypeopt
-	read -p "What is the file type? " filetype
+	read -p "" filetype
 	testfiletype
 	read -p "What is the maximum depth we can search? " filedepth
 	testfiledepth
@@ -197,8 +201,9 @@ Searchforfile(){
 
 	if (( lines == 1 ))
 	then
+		echo "What actions should we take? "
 		actionmenu
-		read -p "What actions should we take? " fileaction
+		read -p "" fileaction
 		testfileaction
 	fi
 	pausefooter
@@ -207,7 +212,7 @@ Searchforfile(){
 testfileaction(){
 	case $fileaction in 
 		d) find $directory -maxdepth $filedepth -name $filename -type $filetype -exec rm {} \;
-		echo "Your file has been deleted";;
+		echo "File has been deleted";;
 		p) find $directory -maxdepth $filedepth -name $filename -type $filetype -print;;
 		P) find $directory -maxdepth $filedepth -name $filename -type $filetype -print0;;
 		c) 
@@ -282,7 +287,6 @@ testdirectory(){
 testfindresult(){
 	#counts the bymber of results
 	lines=$(find $directory -maxdepth $filedepth -name $filename -type $filetype| wc -l)
-	echo ""
 	echo "We found $lines matchs"
 }
 
@@ -304,16 +308,15 @@ opt1Secondmenu(){
 	opt1menu
 }
 
+# Main process loop which takes user input and starts process
 while true
 do
-showmenu
+	showmenu
 
-case $WelcomeOptions in 
-	1) opt1menu;;
-	2) Searchforfile;;
-	3) profilermenu;;
-	9) echo "Exiting program"
-		exit;;
-esac
-
+	case $WelcomeOptions in 
+		1) opt1menu;;
+		2) Searchforfile;;
+		3) profilermenu;;
+		9) exit;;
+	esac
 done
