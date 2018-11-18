@@ -54,27 +54,52 @@ profilermenu(){
 	profilercheck
 }
 
-profileoptions(){
-	read -p "Would you like to monitor the memory utilization? " profileoptmem
-	read -p "Would you like to monitor the CPU utilization? " profileoptcpu
-	profileoptionsmenu
+profilemenu(){
+	clear
+	header
+	echo "1) Monitor memory utilization"
+	echo "2) Monitor CPU utilization"
+	echo "3) Monitor both memory and CPU utilization"
+	echo "9) Exit back to main menu"
+	echo "======================================================"
+	read -p "" profilemenu
+	profiletoptions	
 }
 
-profileoptionsmenu(){
-	echo ""
-	top | grep $profiler | awk '{print "CPU: " $2}'
-	
-	pausefooter
+profiletoptions(){
+	case $profilemenu in 
+		1) 
+			top | awk '{if($13 ~ '$temp') print "Program name " $13 " is using "$11"% of memory"}' & ;;
+		2) 
+			top | awk '{if($13 ~ '$temp') print "Program name " $13 " is using "$10"% of the CPU"}' & ;;
+		3) 
+			top | awk '{if($13 ~ '$temp') print "Program name " $13 " is using "$11"% of memory and " $10"% of the CPU"}' &	;;
+		9) 
+			showmenu;;
+	esac
+
+	read -s- n 1 key
+
+	if (( $key -eq "" ))
+	then
+		echo "Your pressed enter"
+		kill %1
+		pausefooter
+
+	fi
+
 }
 
 profilercheck(){
 	# Add in wildcards to profiler var
-	wildcard="*"
-	temp=$profiler$wildcard
-	profiler=$temp
-       	echo "$profiler"
+	wildcard="/"
+	wildcard2="*"
+	temp=$wildcard$profiler$wildcard
+	temp2=$wildcard2$profiler$wildcard2
+	echo "temp : $temp"
+       	echo "temp2: $temp2"
 	# Counts the number of unique name processes running
-	profilerlines=$( top -n 1 |grep $temp | uniq -f 1 | wc -l)
+	profilerlines=$(top -n 2 | awk '{if(a[$13]++ == 1) if($13 ~ '$temp') print $13}' | wc -l)
 	echo "There are $profilerlines currenlty running"
 	
 	# If there are multiple processes, echo out the different processes
@@ -93,7 +118,9 @@ profilercheck(){
 
 	elif(( $profilerlines == 1 ))
 	then
-		profileoptions
+		echo "We found 1"
+		pausefooter
+		profilemenu
 	fi
 }
 
